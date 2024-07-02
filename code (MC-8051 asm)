@@ -1,0 +1,311 @@
+org 00h
+XUNG	bit p2.0	;xung
+DL	bit p2.1	;dulieu
+ST	bit p2.2	;chot
+jmp ini
+org 0003h
+ljmp EFFECTS
+
+org 0013h
+ljmp SPEED
+;r3 dung cho timer (delay)
+ini:
+
+mov IE,#10000101b	;ngat ngoai theo canh xuong
+;mov IP,#00000101b
+setb IT0
+setb IT1
+mov R5,#0		;switching effects
+mov R0,#70		;set effects speed
+main:
+
+setb XUNG	;tao xung de truyen du lieu vao bo nho dem cua ic
+clr XUNG
+setb ST
+clr ST
+
+sjmp $		;doi den khi phuc vu ngat
+
+loop1:
+   call HU1
+   sjmp $
+   reti
+loop2:
+   call HU2
+   jmp loop2
+   reti
+loop3:
+   call HU3
+   jmp loop3
+   reti   
+loop4:
+   call HU4
+   jmp loop4
+   reti
+loop5:
+   call HU5
+   jmp loop5
+   reti
+loop6:
+   call HU6
+   jmp loop6
+   reti
+loop7:
+   call HU7
+   jmp loop7
+   reti
+loop8:
+   call HU8
+   jmp loop8
+   reti
+loop9:
+   call HU9
+   jmp loop9
+   reti
+loop10:
+   call HU10
+   jmp loop10
+   reti
+;...
+;loopn:
+   ;call HUn
+   ;jmp loopn
+   ;reti
+HU1:		;bat 40 led dau (trai tim ben ngoai)
+   mov r4,#40
+   bat40:
+   setb DL
+   setb XUNG
+   clr XUNG
+   djnz r4,bat40
+   setb ST
+   clr ST 
+reti
+HU2:		;bat 24 led sau (trai tim ben trong)
+   mov r2,#24
+   qwe10:
+   setb DL
+   setb XUNG
+   clr XUNG
+   djnz r2,qwe10
+   mov r4,#40
+   oo:
+   clr DL
+   setb XUNG
+   clr XUNG
+   djnz r4,oo
+   setb ST
+   clr ST
+reti   
+HU3:		;2 trai tim nhap nhay (ket hop 2 hieu ung)
+   call HU1
+   call delay
+   call HU2
+   call delay
+reti
+HU4:		; sang nhap nhay
+   call bat64
+   call delay
+   call tat64
+   call delay
+reti
+HU5:				;5-10
+   mov r1,#5
+   cc:
+      call bat
+      djnz r1,cc
+   mov r1,#10
+   clz:
+      call tat
+      djnz r1,clz
+reti
+HU6: 		;sang con lac don
+  mov r4,#1
+   enk:
+    call bat
+  djnz r4,enk
+  mov r4,#63
+   xen:
+   call tat
+   djnz r4,xen
+reti
+HU7:				;sang nhap nhay 2 leds
+   mov r4,#10
+   ese:
+   call bat
+   call bat
+   call tat
+   call tat
+   djnz r4,ese
+reti
+HU8:				;sang lan luot het 1 vong roi lan luot tat
+   mov r2,#64
+   bat_all:
+      call bat
+      djnz r2, bat_all
+   mov r2,#64
+   tat_all:
+      call tat
+	  djnz r2, tat_all
+reti
+HU9:
+   call bat64
+    RETI
+HU10:				;xen ke
+mov r1,#32
+   qwe21:
+   setb DL
+   setb XUNG
+   clr XUNG
+   clr DL
+   setb XUNG
+   clr XUNG
+   setb ST
+   clr ST   
+djnz r1,qwe21
+call delay 
+
+mov r2,#32
+   qwe22:
+   clr DL
+   setb XUNG
+   clr XUNG    
+   setb DL
+   setb XUNG
+   clr XUNG
+   setb ST
+   clr ST
+djnz r2,qwe22  
+call delay
+
+reti	  
+EFFECTS:			;ngat chuyen doi hieu ung
+inc R5
+   cjne R5,#1,neHU1		;R5=n => hieu ung n. Neu r5 < n => Carry flag=1, r5>=n => Carry flag=0.
+   call tat64			;tat cac hieu ung truoc do
+   ljmp loop1
+   neHU1:			;not_equal
+   cjne R5,#2,neHU2
+   call tat64
+   ljmp loop2
+   neHU2:
+   cjne R5,#3,neHU3
+   call tat64
+   ljmp loop3
+   neHU3:
+   cjne R5,#4,neHU4
+   call tat64
+   ljmp loop4
+   neHU4:   
+   cjne R5,#5,neHU5
+   call tat64
+   ljmp loop5
+   neHU5:   
+   cjne R5,#6,neHU6
+   call tat64
+   ljmp loop6
+   neHU6:
+   cjne R5,#7,neHU7
+   call tat64
+   ljmp loop7
+   neHU7:
+   cjne R5,#8,neHU8
+   call tat64
+   ljmp loop8
+   neHU8:
+   cjne R5,#9,neHU9
+   call tat64
+   ljmp loop9
+   neHU9:  
+   cjne R5,#10,neHU10
+   call tat64
+   ljmp loop10
+   neHU10: 
+;...
+;   cjne R5,#n,neHUn
+;call tat64
+;   ljmp loopn
+;   neHUn:
+   call tat64
+   mov R5,#0		;quay lai hieu ung 1
+   sjmp EFFECTS
+reti
+SPEED:			;led hien thi nhanh dan (4 muc)
+;R0 < data => carry flag =1 else carry flag =0
+   dec R0
+   cjne R0,#50,ne1
+   jmp xxx 		;R0=50
+   ne1:
+   jnc SPEED
+   cjne R0,#30,ne2
+   jmp xxx		;R0=30
+   ne2:
+   jnc SPEED   
+   cjne R0,#10,ne3
+   jmp xxx		;R0=10
+   ne3:
+   jnc SPEED
+   ;...
+   ;cjne R0,#n,ne_n
+   ;jmp xxx 		;R0=n
+   ;ne1:
+   ;jnc SPEED   
+   mov R0,#70		;ve lai toc do ban dau
+   xxx:
+reti
+ bat:			;sang 1led
+      setb DL           
+      DOC_BIT_on:		
+;	mov r2..
+	 setb XUNG	;tao xung de truyen du lieu vao bo nho dem cua ic
+	 clr XUNG
+;      djnz r2,DOC_BIT_on
+      setb ST		;ic chuyen du lieu ra 8 led
+      clr ST
+      call delay    
+reti
+tat:   			;tat 1led
+      clr DL
+      DOC_BIT_off:		
+	 setb XUNG	;tao xung de truyen du lieu vao bo nho dem cua ic
+	 clr XUNG
+      setb ST		;ic chuyen du lieu ra 8 led
+      clr ST
+      call delay
+reti
+bat64:			;turn on all leds immediately
+mov r7,#64
+    BAT_64:
+      setb DL
+      DOC_BIT_on64:		
+	 setb XUNG	;tao xung de truyen du lieu vao bo nho dem cua ic
+	 clr XUNG
+   djnz r7,BAT_64	 
+      setb ST		;ic chuyen du lieu ra 8 led
+      clr ST
+ret
+tat64:			;turn off all leds immediately
+mov r7,#64
+    TAT_64:
+      clr DL
+      DOC_BIT_off64:		
+	 setb XUNG	;tao xung de truyen du lieu vao bo nho dem cua ic
+	 clr XUNG
+   djnz r7,TAT_64	 
+      setb ST		;ic chuyen du lieu ra 8 led
+      clr ST
+reti
+delay:  	;10ms x r0lan, toc do hieu ung
+mov A,R0
+mov R3,A
+   loop:
+   mov TMOD,#01h; Timer 0 che do 1
+   mov TH0,#0DCh
+   mov TL0,#00h
+   setb TR0  
+   jnb TF0,$ 
+   clr TF0
+   clr TR0
+   djnz R3,loop
+ret
+	END
